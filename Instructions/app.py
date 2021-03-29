@@ -63,11 +63,7 @@ def stations():
 
     session.close()
 
-    all_stations = []
-    for station in results:
-        station_dict = {}
-        sattion_dict["station"] = station
-        all_prcp.append(station_dict)
+    all_stations = list(np.ravel(results))
 
     return jsonify(all_stations)
 
