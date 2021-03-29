@@ -38,8 +38,7 @@ def precipiation():
     session = Session(engine)
 
     """Return a list of all Precipitation"""
-    results = session.query(measurement.date, measurement.prcp).\
-        filter(measurement.date > "2016-08-22").all()
+    results = session.query(measurement.date, measurement.prcp).all()
 
     session.close()
 
@@ -70,8 +69,25 @@ def stations():
 
 @app.route("/tobs")
 def tobs():
-    print("Server received request for 'tobs' page..."),
-    return "'tobs' page."
+    session = Session(engine)
+
+    """Return a list of all tobs"""
+    results = session.query(measurement.date, measurement.prcp, measurement.tobs).\
+        filter(measurement.date > "2016-08-22").\
+        filter(measurement.station == "USC00519281").\
+        order_by(measurement.date).all()
+
+    session.close()
+
+    all_tobs = []
+    for date, prcp, tobs in results:
+        tobs_dict = {}
+        tobs_dict["date"] = date
+        tobs_dict["tobs"] = tobs
+        tobs_dict["prcp"] = prcp
+        all_tobs.append(tobs_dict)
+
+    return jsonify(all_tobs)
 
 
 if __name__ == "__main__":
