@@ -1,9 +1,11 @@
 import numpy as np
 import sqlalchemy
+import datetime as dt
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 from flask import Flask, jsonify
+
 
 # Database Setup
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
@@ -22,13 +24,13 @@ app = Flask(__name__)
 # Flask Routes
 @app.route("/")
 def home():
-    """List all available api routes."""
+
     return (
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/[start_date format:yyyy-mm-dd]<br/>"
+        f"/api/v1.0/start<br/>"
         f"/api/v1.0/[start_date format:yyyy-mm-dd]/[end_date format:yyyy-mm-dd]"
     )
 
@@ -88,6 +90,29 @@ def tobs():
         all_tobs.append(tobs_dict)
 
     return jsonify(all_tobs)
+
+
+@app.route("/start")
+def start_date():
+
+    session = Session(engine)
+    start = '2016-08-23'
+
+    """Return a list of all min, avg, and max for a start date"""
+    results = session.query(func.min(measurement.tobs), func.avg(measurement.tobs), func.max(measurement.tobs)).\
+        filter(measurement.date >= start)
+
+    session.close()
+
+    start_tobs = []
+    for min, avg, max in results:
+        start_tobs_dict = {}
+        start_tobs_dict["min_temp"] = min
+        start_tobs_dict["avg_temp"] = avg
+        start_tobs_dict["max_temp"] = max
+        start_tobs.append(start_tobs_dict)
+
+    return jsonify(start_tobs)
 
 
 if __name__ == "__main__":
